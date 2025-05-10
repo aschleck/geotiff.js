@@ -1,6 +1,6 @@
-import http from 'http';
-import https from 'https';
-import urlMod from 'url';
+import http from 'node:http';
+import https from 'node:https';
+import urlMod from 'node:url';
 
 import { BaseClient, BaseResponse } from './base.js';
 import { AbortError } from '../../utils.js';
