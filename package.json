@@ -148,10 +148,10 @@
   },
   "author": "Fabian Schindler",
   "browser": {
-    "fs": false,
-    "http": false,
-    "https": false,
-    "url": false
+    "node:fs": false,
+    "node:http": false,
+    "node:https": false,
+    "node:url": false
   },
   "sideEffects": false,
   "contributors": [
