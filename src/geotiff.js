@@ -7,7 +7,6 @@ import Pool from './pool.js';
 import { makeRemoteSource, makeCustomSource } from './source/remote.js';
 import { makeBufferSource } from './source/arraybuffer.js';
 import { makeFileReaderSource } from './source/filereader.js';
-import { makeFileSource } from './source/file.js';
 import { BaseClient, BaseResponse } from './source/client/base.js';
 
 import { fieldTypes, fieldTagNames, arrayFields, geoKeyNames } from './globals.js';
@@ -696,7 +695,7 @@ export { MultiGeoTIFF };
  * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
  */
 export async function fromUrl(url, options = {}, signal) {
-  return GeoTIFF.fromSource(makeRemoteSource(url, options), signal);
+  return GeoTIFF.fromSource(await makeRemoteSource(url, options), signal);
 }
 
 /**
@@ -725,22 +724,6 @@ export async function fromArrayBuffer(arrayBuffer, signal) {
 }
 
 /**
- * Construct a GeoTIFF from a local file path. This uses the node
- * [filesystem API]{@link https://nodejs.org/api/fs.html} and is
- * not available on browsers.
- *
- * N.B. After the GeoTIFF has been completely processed it needs
- * to be closed but only if it has been constructed from a file.
- * @param {string} path The file path to read from.
- * @param {AbortSignal} [signal] An AbortSignal that may be signalled if the request is
- *                               to be aborted
- * @returns {Promise<GeoTIFF>} The resulting GeoTIFF file.
- */
-export async function fromFile(path, signal) {
-  return GeoTIFF.fromSource(makeFileSource(path), signal);
-}
-
-/**
  * Construct a GeoTIFF from an HTML
  * [Blob]{@link https://developer.mozilla.org/en-US/docs/Web/API/Blob} or
  * [File]{@link https://developer.mozilla.org/en-US/docs/Web/API/File}
@@ -766,9 +749,11 @@ export async function fromBlob(blob, signal) {
  * @returns {Promise<MultiGeoTIFF>} The resulting MultiGeoTIFF file.
  */
 export async function fromUrls(mainUrl, overviewUrls = [], options = {}, signal) {
-  const mainFile = await GeoTIFF.fromSource(makeRemoteSource(mainUrl, options), signal);
+  const mainFile = await GeoTIFF.fromSource(await makeRemoteSource(mainUrl, options), signal);
   const overviewFiles = await Promise.all(
-    overviewUrls.map((url) => GeoTIFF.fromSource(makeRemoteSource(url, options))),
+    overviewUrls.map(
+      (url) =>
+        makeRemoteSource(url, options).then(source => GeoTIFF.fromSource(source))),
   );
 
   return new MultiGeoTIFF(mainFile, overviewFiles);

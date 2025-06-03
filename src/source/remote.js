@@ -4,7 +4,6 @@ import { BlockedSource } from './blockedsource.js';
 
 import { FetchClient } from './client/fetch.js';
 import { XHRClient } from './client/xhr.js';
-import { HttpClient } from './client/http.js';
 
 class RemoteSource extends BaseSource {
   /**
@@ -169,12 +168,6 @@ export function makeXHRSource(url, { headers = {}, maxRanges = 0, allowFullFile 
   return maybeWrapInBlockedSource(source, blockOptions);
 }
 
-export function makeHttpSource(url, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
-  const client = new HttpClient(url);
-  const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
-  return maybeWrapInBlockedSource(source, blockOptions);
-}
-
 export function makeCustomSource(client, { headers = {}, maxRanges = 0, allowFullFile = false, ...blockOptions } = {}) {
   const source = new RemoteSource(client, headers, maxRanges, allowFullFile);
   return maybeWrapInBlockedSource(source, blockOptions);
@@ -185,12 +178,12 @@ export function makeCustomSource(client, { headers = {}, maxRanges = 0, allowFul
  * @param {string} url
  * @param {object} options
  */
-export function makeRemoteSource(url, { forceXHR = false, ...clientOptions } = {}) {
+export async function makeRemoteSource(url, { forceXHR = false, ...clientOptions } = {}) {
   if (typeof fetch === 'function' && !forceXHR) {
     return makeFetchSource(url, clientOptions);
   }
   if (typeof XMLHttpRequest !== 'undefined') {
     return makeXHRSource(url, clientOptions);
   }
-  return makeHttpSource(url, clientOptions);
+  throw new Error('No other fallback');
 }
